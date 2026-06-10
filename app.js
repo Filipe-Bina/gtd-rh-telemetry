@@ -2,7 +2,8 @@
 // GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - CORE ENGINE
 // ==========================================================================
 
-const supabase = supabase.createClient(window.GTD_CONFIG.SUPABASE_URL, window.GTD_CONFIG.SUPABASE_ANON_KEY);
+// Alterado o nome da constante para evitar colisão com o objeto global da CDN
+const supabaseClient = supabase.createClient(window.GTD_CONFIG.SUPABASE_URL, window.GTD_CONFIG.SUPABASE_ANON_KEY);
 
 // Gerenciamento de Estado Global do App
 const state = {
@@ -19,10 +20,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     render();
 });
 
-// Busca os dados dos funcionários e injeta escuta Realtime
+// Busca os dados dos funcionários
 async function fetchEmployeesData() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('employees')
             .select('*')
             .order('name', { ascending: true });
@@ -37,6 +38,8 @@ async function fetchEmployeesData() {
 // Configura a casca HTML padrão do App (Topbar Dinâmica e Containers)
 function initAppStructure() {
     const app = document.getElementById('app');
+    if (!app) return;
+    
     app.innerHTML = `
         <header class="topbar">
             <div class="topbar-inner">
@@ -59,7 +62,7 @@ function initAppStructure() {
     });
 }
 
-// Roteador de Navigation Virtual (SPA)
+// Roteador de Navegação Virtual (SPA)
 function navigateTo(targetView) {
     state.view = targetView;
     if (targetView === 'public') {
@@ -69,7 +72,7 @@ function navigateTo(targetView) {
     render();
 }
 
-// Utilitário para Sanitização e Prevenção de Injeção de Scripts (XSS)
+// Utilitário para Sanitização (XSS)
 function escapeHtml(str) {
     if (!str) return '';
     return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#039;');
@@ -222,7 +225,6 @@ function renderPublicView(container) {
         </section>
     `;
 
-    // Eventos vinculados com segurança
     document.getElementById('btn-search-trigger').addEventListener('click', handleSearchClick);
     document.getElementById('search-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleSearchClick();
@@ -281,7 +283,6 @@ function renderLoginView(container) {
         </div>
     `;
 
-    // Mapeamento explícito de listeners sem inline attributes
     document.getElementById('btn-tab-login').addEventListener('click', () => switchAuthTab('login'));
     document.getElementById('btn-tab-reg').addEventListener('click', () => switchAuthTab('reg'));
     
@@ -321,7 +322,7 @@ async function handleRegisterSubmit(e) {
     }
 
     try {
-        const { data, error } = await supabase.rpc('register_admin', { p_re: re, p_password: pwd });
+        const { data, error } = await supabaseClient.rpc('register_admin', { p_re: re, p_password: pwd });
         if (error) throw error;
 
         if (data.success) {
@@ -343,7 +344,7 @@ async function handleLoginSubmit(e) {
     const pwd = form.password.value.trim();
 
     try {
-        const { data, error } = await supabase.rpc('login_admin', { p_re: re, p_password: pwd });
+        const { data, error } = await supabaseClient.rpc('login_admin', { p_re: re, p_password: pwd });
         if (error) throw error;
 
         if (data.success) {
@@ -447,10 +448,8 @@ function renderAdminView(container) {
         </div>
     `;
 
-    // Vincula a criação de novos técnicos
     document.getElementById('form-add-employee').addEventListener('submit', handleCreateEmployee);
 
-    // Vincula a alteração de status dinamicamente por classe
     const selectors = container.querySelectorAll('.status-select');
     selectors.forEach(select => {
         select.addEventListener('change', (e) => {
@@ -470,7 +469,7 @@ async function handleCreateEmployee(e) {
     const team = form.team.value;
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('employees')
             .insert([{ re, name, role, team, status: 'Ativo' }]);
 
@@ -494,7 +493,7 @@ async function handleCreateEmployee(e) {
 
 async function handleStatusMutation(id, newStatus) {
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient
             .from('employees')
             .update({ status: newStatus, updated_at: new Date().toISOString() })
             .eq('id', id);
