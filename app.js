@@ -40,7 +40,7 @@ function initAppStructure() {
     app.innerHTML = `
         <header class="topbar">
             <div class="topbar-inner">
-                <div class="brand-logo" onclick="navigateTo('public')">
+                <div class="brand-logo" id="logo-click">
                     <span class="mini-mark">GTD</span>
                     <span class="brand-title">Ability Funcionários</span>
                 </div>
@@ -52,9 +52,14 @@ function initAppStructure() {
             <div id="main-view"></div>
         </main>
     `;
+
+    // Listener seguro para clique na logo
+    document.getElementById('logo-click').addEventListener('click', () => {
+        navigateTo('public');
+    });
 }
 
-// Roteador de Navegação Virtual (SPA)
+// Roteador de Navigation Virtual (SPA)
 function navigateTo(targetView) {
     state.view = targetView;
     if (targetView === 'public') {
@@ -78,6 +83,7 @@ function isValidPassword(pwd) {
 // Exibe caixas de alerta na tela
 function showAlert(msg, type = 'ok') {
     const box = document.getElementById('alert-msg');
+    if (!box) return;
     if (!msg) {
         box.className = 'message';
         box.textContent = '';
@@ -92,6 +98,8 @@ function render() {
     renderTopbarActions();
     
     const container = document.getElementById('main-view');
+    if (!container) return;
+
     if (state.view === 'public') renderPublicView(container);
     else if (state.view === 'login') renderLoginView(container);
     else if (state.view === 'admin') renderAdminView(container);
@@ -100,17 +108,22 @@ function render() {
 // Renderiza as ações do cabeçalho de acordo com o estado do usuário
 function renderTopbarActions() {
     const actions = document.getElementById('nav-actions');
+    if (!actions) return;
+
     if (state.view === 'admin' && state.user) {
         actions.innerHTML = `
             <div class="user-chip">
                 <span>👑 ${escapeHtml(state.user.name)}</span>
-                <button class="ghost-btn" onclick="logoutAdmin()">Sair</button>
+                <button class="ghost-btn" id="btn-logout">Sair</button>
             </div>
         `;
+        document.getElementById('btn-logout').addEventListener('click', logoutAdmin);
     } else if (state.view !== 'login') {
-        actions.innerHTML = `<button class="primary-btn shrink-btn" onclick="navigateTo('login')">Acesso Restrito</button>`;
+        actions.innerHTML = `<button class="primary-btn shrink-btn" id="btn-nav-login">Acesso Restrito</button>`;
+        document.getElementById('btn-nav-login').addEventListener('click', () => navigateTo('login'));
     } else {
-        actions.innerHTML = `<button class="secondary-btn shrink-btn" onclick="navigateTo('public')">Voltar à Consulta</button>`;
+        actions.innerHTML = `<button class="secondary-btn shrink-btn" id="btn-nav-public">Voltar à Consulta</button>`;
+        document.getElementById('btn-nav-public').addEventListener('click', () => navigateTo('public'));
     }
 }
 
@@ -118,7 +131,6 @@ function renderTopbarActions() {
 // MÓDULO 1: VIEW PÚBLICA (CONSULTA E TELEMETRIA)
 // ==========================================
 function renderPublicView(container) {
-    // Processamento estatístico em tempo real mapeado por equipes
     const stats = { DADOS: {}, SWT: {} };
     const statusTypes = ['Total', 'Ativo', 'Férias', 'Atestado', 'Curso', 'Inativo', 'Emprestado'];
     
@@ -135,7 +147,6 @@ function renderPublicView(container) {
         }
     });
 
-    // Filtra colaboradores pelo campo de busca por nome
     const filtered = state.employees.filter(emp => 
         emp.name.toLowerCase().includes(state.searchQuery.toLowerCase())
     );
@@ -178,7 +189,7 @@ function renderPublicView(container) {
             <div class="panel search-panel">
                 <div class="search-bar-container">
                     <input type="text" id="search-input" placeholder="Digite o nome do colaborador para consultar..." value="${escapeHtml(state.searchQuery)}">
-                    <button class="primary-btn" onclick="handleSearchClick()">Buscar</button>
+                    <button class="primary-btn" id="btn-search-trigger">Buscar</button>
                 </div>
                 
                 <div class="results-container">
@@ -211,7 +222,8 @@ function renderPublicView(container) {
         </section>
     `;
 
-    // Listener para busca ao digitar (pressione Enter)
+    // Eventos vinculados com segurança
+    document.getElementById('btn-search-trigger').addEventListener('click', handleSearchClick);
     document.getElementById('search-input').addEventListener('keypress', (e) => {
         if (e.key === 'Enter') handleSearchClick();
     });
@@ -236,14 +248,14 @@ function renderLoginView(container) {
                 </div>
                 
                 <div class="auth-tabs">
-                    <button class="tab-btn active" id="btn-tab-login" onclick="switchAuthTab('login')">Acessar</button>
-                    <button class="tab-btn" id="btn-tab-reg" onclick="switchAuthTab('reg')">Novo Cadastro</button>
+                    <button class="tab-btn active" id="btn-tab-login">Acessar</button>
+                    <button class="tab-btn" id="btn-tab-reg">Novo Cadastro</button>
                 </div>
 
                 <div class="auth-forms-container">
-                    <form id="form-login" class="auth-form show" onsubmit="handleLoginSubmit(event)">
+                    <form id="form-login" class="auth-form show">
                         <label>
-                            <span>RE Corporativo Ability</span>
+                            <span>RE Corporativo Admin</span>
                             <input type="text" name="re" required placeholder="Digite seu RE">
                         </label>
                         <label>
@@ -253,7 +265,7 @@ function renderLoginView(container) {
                         <button type="submit" class="primary-btn">Entrar no Sistema</button>
                     </form>
 
-                    <form id="form-reg" class="auth-form" onsubmit="handleRegisterSubmit(event)">
+                    <form id="form-reg" class="auth-form">
                         <label>
                             <span>RE Autorizado Whitelist</span>
                             <input type="text" name="re" required placeholder="Digite seu RE corporativo">
@@ -268,6 +280,13 @@ function renderLoginView(container) {
             </div>
         </div>
     `;
+
+    // Mapeamento explícito de listeners sem inline attributes
+    document.getElementById('btn-tab-login').addEventListener('click', () => switchAuthTab('login'));
+    document.getElementById('btn-tab-reg').addEventListener('click', () => switchAuthTab('reg'));
+    
+    document.getElementById('form-login').addEventListener('submit', handleLoginSubmit);
+    document.getElementById('form-reg').addEventListener('submit', handleRegisterSubmit);
 }
 
 function switchAuthTab(type) {
@@ -361,7 +380,7 @@ function renderAdminView(container) {
                 <h3>👥 Inclusão de Técnico</h3>
                 <p class="panel-subtitle">Insira um novo profissional na malha operacional do banco</p>
                 
-                <form id="form-add-employee" onsubmit="handleCreateEmployee(event)" class="form">
+                <form id="form-add-employee" class="form">
                     <label>
                         <span>RE do Colaborador</span>
                         <input type="text" name="re" required placeholder="Ex: 30123">
@@ -410,7 +429,7 @@ function renderAdminView(container) {
                                     <td><span class="table-team-badge ${emp.team.toLowerCase()}">${escapeHtml(emp.team)}</span></td>
                                     <td class="text-muted">${escapeHtml(emp.role)}</td>
                                     <td>
-                                        <select class="status-select select-${emp.status.toLowerCase()}" onchange="handleStatusMutation('${emp.id}', this.value)">
+                                        <select class="status-select select-${emp.status.toLowerCase()}" data-id="${emp.id}">
                                             <option value="Ativo" ${emp.status === 'Ativo' ? 'selected' : ''}>Ativo</option>
                                             <option value="Férias" ${emp.status === 'Férias' ? 'selected' : ''}>Férias</option>
                                             <option value="Atestado" ${emp.status === 'Atestado' ? 'selected' : ''}>Atestado</option>
@@ -427,6 +446,19 @@ function renderAdminView(container) {
             </div>
         </div>
     `;
+
+    // Vincula a criação de novos técnicos
+    document.getElementById('form-add-employee').addEventListener('submit', handleCreateEmployee);
+
+    // Vincula a alteração de status dinamicamente por classe
+    const selectors = container.querySelectorAll('.status-select');
+    selectors.forEach(select => {
+        select.addEventListener('change', (e) => {
+            const id = e.target.getAttribute('data-id');
+            const val = e.target.value;
+            handleStatusMutation(id, val);
+        });
+    });
 }
 
 async function handleCreateEmployee(e) {
@@ -469,7 +501,6 @@ async function handleStatusMutation(id, newStatus) {
 
         if (error) throw error;
         
-        // Atualiza a memória local defensivamente
         const target = state.employees.find(e => e.id === id);
         if (target) target.status = newStatus;
         
