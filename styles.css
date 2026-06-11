@@ -1,5 +1,5 @@
 /* ==========================================================================
-   GTD-ABILITY - REPOSITÓRIO VISUAL CORPORATIVO SAAS ULTRA CLEAN V3.3 COMPLETE
+   GTD-ABILITY - REPOSITÓRIO VISUAL CORPORATIVO SAAS ULTRA CLEAN V3.4 COMPLETE
    ========================================================================== */
 
 :root {
@@ -52,47 +52,47 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px 
 .ghost-btn { background: transparent; color: #ef4444; border: none; font-weight: 600; cursor: pointer; padding: 4px 8px; }
 .shrink-btn { padding: 8px 16px; font-size: 0.88rem; }
 
-/* REESTRUTURAÇÃO COMPLETA: TABELA MATRICIAL ALINHADA E ESPAÇADA */
+/* REESTRUTURAÇÃO MACRO: TABELA MATRICIAL COM COLUNAS AMPLAS E VISÍVEIS */
 .telemetry-table-matrix { 
   width: 100%; 
   border-collapse: collapse; 
   text-align: center;
-  min-width: 900px; /* Garante que a tabela não se esprema em telas menores */
+  min-width: 1050px; /* Alarga as colunas impedindo o aperto do texto */
 }
 .telemetry-table-matrix th { 
-  background: var(--surface-2); 
-  padding: 14px 18px; 
-  font-size: 0.82rem; 
+  background: #f8fafc; 
+  padding: 16px 24px; /* Aumenta respiro interno das células superiores */
+  font-size: 0.85rem; 
   font-weight: 700; 
   text-transform: uppercase; 
-  color: var(--muted); 
-  border-bottom: 2px solid var(--line); 
+  color: #475569; 
+  border-bottom: 3px solid var(--line); 
 }
 .telemetry-table-matrix td { 
-  padding: 14px 18px; 
-  font-size: 0.92rem; 
+  padding: 16px 24px; /* Abre espaço vertical e horizontal entre as linhas */
+  font-size: 0.95rem; 
   border-bottom: 1px solid var(--line); 
   color: var(--text); 
 }
 
-/* Garante leitura alinhada do cargo na esquerda */
+/* Espaço da coluna de hierarquia */
 .cell-cargo-title {
   text-align: left !important;
   font-weight: 600;
-  color: #334155;
-  width: 280px;
+  color: #1e293b;
+  width: 320px;
 }
 
 .cell-total { 
   font-weight: 700; 
   background: var(--surface-2); 
   text-align: center; 
-  width: 80px; 
+  width: 90px; 
 }
 
-/* Efeito de mapa térmico elegante para colunas numeradas */
+/* Tratamento estético de células vazias e ativas */
 .telemetry-table-matrix td.cell-zero {
-  color: #cbd5e1; /* Deixa números zero discretos */
+  color: #cbd5e1;
 }
 .telemetry-table-matrix td.has-value { font-weight: 700; }
 .telemetry-table-matrix td.has-value.status-ativo { color: var(--clr-ativo); background: #f0fdf4; }
@@ -102,22 +102,22 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px 
 .telemetry-table-matrix td.has-value.status-inativo { color: var(--clr-inativo); background: #f8fafc; }
 .telemetry-table-matrix td.has-value.status-emprestado { color: var(--clr-emprestado); background: #fffbeb; }
 
-/* Linha de resumo com respiro */
-.row-subtotal-summary { background: #f8fafc; font-weight: 700; border-top: 2px solid var(--line); }
-.row-subtotal-summary td { color: #1e1b4b !important; padding: 16px 18px; }
+/* Subtotais em destaque */
+.row-subtotal-summary { background: #f1f5f9; font-weight: 700; border-top: 2px solid #cbd5e1; }
+.row-subtotal-summary td { color: #1e1b4b !important; padding: 18px 24px; }
 
 /* GRID DE CONSOLIDAÇÃO TOTAL */
 .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 14px; }
-.metric-card { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 16px 12px; text-align: center; display: flex; flex-direction: column; justify-content: center; border-top: 4px solid #cbd5e1; }
+.metric-card { border-radius: 8px; padding: 18px 12px; text-align: center; display: flex; flex-direction: column; justify-content: center; border-top: 4px solid #cbd5e1; }
 .metric-card.total { border-top-color: #fff; }
-.metric-card.ativo { border-top-color: var(--clr-ativo); background: rgba(16,185,129,0.1); color: #10b981; }
-.metric-card.férias { border-top-color: var(--clr-ferias); background: rgba(59,130,246,0.1); color: #3b82f6; }
-.metric-card.atestado { border-top-color: var(--clr-atestado); background: rgba(239,68,68,0.1); color: #ef4444; }
-.metric-card.curso { border-top-color: var(--clr-curso); background: rgba(139,92,246,0.1); color: #8b5cf6; }
-.metric-card.inativo { border-top-color: var(--clr-inativo); background: rgba(148,163,184,0.1); color: #94a3b8; }
-.metric-card.emprestado { border-top-color: var(--clr-emprestado); background: rgba(245,158,11,0.1); color: #f59e0b; }
-.metric-val { font-size: 1.6rem; font-weight: 800; display: block; margin-bottom: 2px; }
-.metric-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; }
+.metric-card.ativo { border-top-color: var(--clr-ativo); background: rgba(16,185,129,0.15); color: #10b981; }
+.metric-card.férias { border-top-color: var(--clr-ferias); background: rgba(59,130,246,0.15); color: #3b82f6; }
+.metric-card.atestado { border-top-color: var(--clr-atestado); background: rgba(239,68,68,0.15); color: #ef4444; }
+.metric-card.curso { border-top-color: var(--clr-curso); background: rgba(139,92,246,0.15); color: #8b5cf6; }
+.metric-card.inativo { border-top-color: var(--clr-inativo); background: rgba(148,163,184,0.15); color: #94a3b8; }
+.metric-card.emprestado { border-top-color: var(--clr-emprestado); background: rgba(245,158,11,0.15); color: #f59e0b; }
+.metric-val { font-size: 1.7rem; font-weight: 800; display: block; margin-bottom: 2px; }
+.metric-label { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; color: #94a3b8; }
 
 /* CARDS PÚBLICOS */
 .search-bar-container { display: flex; gap: 12px; margin-bottom: 24px; }
@@ -173,7 +173,6 @@ input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 4px 
 .message.ok { background: #e7f6ef; color: #065f46; border: 1px solid #a7f3d0; }
 .message.error { background: #fff0ee; color: #991b1b; border: 1px solid #fecaca; }
 
-/* MODAL OVERLAY */
 .modal-overlay {
   display: none;
   position: fixed;

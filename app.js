@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.3 CORE
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.4 MASTER
 // ==========================================================================
 
 let supabaseClient = null;
@@ -227,29 +227,28 @@ function renderPublicView(container) {
         ESCRITÓRIO: ['Supervisora de Escritório', 'Assistente', 'Atendente']
     };
 
-    // FIX CORES: Consolidação Total agora lê e acumula perfeitamente os status reais do cache
-    const totalGeral = { Total: 0 };
-    statusTypes.forEach(s => totalGeral[s] = 0);
+    // PROCESSADOR DE CONSOLIDAÇÃO TOTAL (BLINDADO CONTRA CAIXA ALTA/BAIXA)
+    const totalGeral = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
     
     state.employees.forEach(emp => {
-        totalGeral['Total']++;
-        // Converte para padrão PascalCase para casar perfeitamente com a chave do objeto
-        const statusFormatted = emp.status.charAt(0).toUpperCase() + emp.status.slice(1).toLowerCase();
-        if (totalGeral[statusFormatted] !== undefined) {
-            totalGeral[statusFormatted]++;
-        }
+        totalGeral.Total++;
+        const statusNormalizado = (emp.status || '').toUpperCase().trim();
+        if (statusNormalizado === 'ATIVO') totalGeral.Ativo++;
+        else if (statusNormalizado === 'FÉRIAS' || statusNormalizado === 'FERIAS') totalGeral.Férias++;
+        else if (statusNormalizado === 'ATESTADO') totalGeral.Atestado++;
+        else if (statusNormalizado === 'CURSO') totalGeral.Curso++;
+        else if (statusNormalizado === 'INATIVO') totalGeral.Inativo++;
+        else if (statusNormalizado === 'EMPRESTADO') totalGeral.Emprestado++;
     });
 
     let telemetryHtml = '';
 
     for (const [nucleo, cargos] of Object.entries(nucleos)) {
         let rowsHtml = '';
-        const totaisNucleo = { Total: 0 };
-        statusTypes.forEach(s => totaisNucleo[s] = 0);
+        const totaisNucleo = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
 
         cargos.forEach(cargo => {
-            const statsCargo = { Total: 0 };
-            statusTypes.forEach(s => statsCargo[s] = 0);
+            const statsCargo = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
 
             state.employees.forEach(emp => {
                 const empTeam = (emp.team || '').toUpperCase().trim();
@@ -257,43 +256,48 @@ function renderPublicView(container) {
                 const targetRole = cargo.toUpperCase().trim();
 
                 if (empTeam === nucleo && empRole === targetRole) {
-                    statsCargo['Total']++;
-                    totaisNucleo['Total']++;
+                    statsCargo.Total++;
+                    totaisNucleo.Total++;
                     
-                    const statusFormatted = emp.status.charAt(0).toUpperCase() + emp.status.slice(1).toLowerCase();
-                    if (statsCargo[statusFormatted] !== undefined) {
-                        statsCargo[statusFormatted]++;
-                        totaisNucleo[statusFormatted]++;
-                    }
+                    const statusNormalizado = (emp.status || '').toUpperCase().trim();
+                    if (statusNormalizado === 'ATIVO') { statsCargo.Ativo++; totaisNucleo.Ativo++; }
+                    else if (statusNormalizado === 'FÉRIAS' || statusNormalizado === 'FERIAS') { statsCargo.Férias++; totaisNucleo.Férias++; }
+                    else if (statusNormalizado === 'ATESTADO') { statsCargo.Atestado++; totaisNucleo.Atestado++; }
+                    else if (statusNormalizado === 'CURSO') { statsCargo.Curso++; totaisNucleo.Curso++; }
+                    else if (statusNormalizado === 'INATIVO') { statsCargo.Inativo++; totaisNucleo.Inativo++; }
+                    else if (statusNormalizado === 'EMPRESTADO') { statsCargo.Emprestado++; totaisNucleo.Emprestado++; }
                 }
             });
 
             rowsHtml += `
                 <tr>
                     <td class="cell-cargo-title"><strong>${cargo}</strong></td>
-                    <td class="cell-total">${statsCargo['Total']}</td>
-                    ${statusTypes.map(s => `<td class="${statsCargo[s] > 0 ? 'has-value status-' + s.toLowerCase() : 'cell-zero'}">${statsCargo[s]}</td>`).join('')}
+                    <td class="cell-total">${statsCargo.Total}</td>
+                    ${statusTypes.map(s => {
+                        const val = statsCargo[s];
+                        return `<td class="${val > 0 ? 'has-value status-' + s.toLowerCase() : 'cell-zero'}">${val}</td>`;
+                    }).join('')}
                 </tr>
             `;
         });
 
         telemetryHtml += `
             <div class="panel telemetry-panel" style="margin-bottom:32px;">
-                <h3>📊 NÚCLEO INTERNO: ${nucleo}</h3>
-                <div class="admin-table-wrapper">
+                <h3 style="font-size:1.1rem; color:var(--primary); font-weight:800; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px;">📊 NÚCLEO OPERACIONAL: ${nucleo}</h3>
+                <div class="admin-table-wrapper" style="overflow-x: auto; border: 1px solid var(--line); border-radius: 8px;">
                     <table class="telemetry-table-matrix">
                         <thead>
                             <tr>
-                                <th style="text-align: left;">Hierarquia / Cargo</th>
+                                <th style="text-align: left; padding:16px;">Hierarquia / Cargo</th>
                                 <th class="cell-total">Total</th>
                                 ${statusTypes.map(s => `<th>${s}</th>`).join('')}
                             </tr>
                         </thead>
                         <tbody>
                             ${rowsHtml}
-                            <tr class="row-subtotal-summary">
-                                <td><strong>⚡ SUBTOTAL NÚCLEO</strong></td>
-                                <td class="cell-total">${totaisNucleo['Total']}</td>
+                            <tr class="row-subtotal-summary" style="background:#f1f5f9; font-weight:700;">
+                                <td style="text-align:left; padding:16px;"><strong>⚡ SUBTOTAL NÚCLEO</strong></td>
+                                <td class="cell-total">${totaisNucleo.Total}</td>
                                 ${statusTypes.map(s => `<td>${totaisNucleo[s]}</td>`).join('')}
                             </tr>
                         </tbody>
@@ -313,10 +317,10 @@ function renderPublicView(container) {
             <p>Visão estatística distribuída e fatiada pelo organograma Ability</p>
         </div>
 
-        <div class="panel" style="background:#0f172a; color:#fff; margin-bottom:32px; box-shadow: var(--shadow-md); border: 1px solid #1e293b;">
-          <h3 style="color:#fff; margin-bottom:18px; font-size: 1.1rem; letter-spacing: 0.02em;">🌍 CONSOLIDAÇÃO TOTAL DA ESTRUTURA</h3>
+        <div class="panel" style="background:#0f172a; color:#fff; margin-bottom:32px; padding:24px; border-radius:12px;">
+          <h3 style="color:#fff; margin-bottom:20px; font-size: 1.1rem; font-weight:700; letter-spacing: 0.02em;">🌍 CONSOLIDAÇÃO TOTAL DA ESTRUTURA</h3>
           <div class="metrics-grid">
-             <div class="metric-card total" style="background:rgba(255,255,255,0.06); border:0; border-top: 4px solid #fff;"><span class="metric-val" style="color:#fff">${totalGeral['Total']}</span><span class="metric-label" style="color:#94a3b8">Geral</span></div>
+             <div class="metric-card total" style="border-top: 4px solid #fff; background:rgba(255,255,255,0.05);"><span class="metric-val" style="color:#fff">${totalGeral.Total}</span><span class="metric-label" style="color:#94a3b8">Geral</span></div>
              ${statusTypes.map(s => `
                 <div class="metric-card ${s.toLowerCase()}">
                     <span class="metric-val">${totalGeral[s]}</span>
@@ -368,6 +372,9 @@ function renderPublicView(container) {
     });
 }
 
+// ==========================================
+// MÓDULO: GESTÃO E CADASTRO ADMINISTRATIVO
+// ==========================================
 function renderAdminView(container) {
     container.innerHTML = `
         <div class="admin-grid-layout" style="grid-template-columns: 420px 1fr;">
