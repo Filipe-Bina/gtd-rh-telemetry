@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.6 CORE
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.7 CORE
 // ==========================================================================
 
 let supabaseClient = null;
@@ -24,9 +24,11 @@ const state = {
     editingEmployeeId: null 
 };
 
-document.addEventListener('DOMContentLoaded', () => {
+// FIX CRÍTICO: Agora busca os dados direto na inicialização do sistema
+document.addEventListener('DOMContentLoaded', async () => {
     if (!supabaseClient) return;
     initAppStructure();
+    await fetchEmployeesData(); // Sincroniza a tabela antes do primeiro render
     render();
 });
 
@@ -59,15 +61,32 @@ function initAppStructure() {
                 <div id="nav-actions"></div>
             </div>
         </header>
+        <header class="topbar">
+            <div class="topbar-inner">
+                <div class="brand-logo" id="logo-click-fix" style="cursor:pointer;">
+                    <span class="mini-mark">GTD</span>
+                    <span class="brand-title">Ability Operacional</span>
+                </div>
+                <div id="nav-actions"></div>
+            </div>
+        </header>
         <main class="content">
             <div id="alert-msg" class="message"></div>
             <div id="main-view"></div>
         </main>
         <div id="edit-modal" class="modal-overlay"></div>
     `;
+
+    // Garante que o clique na logo limpe buscas e navegue com segurança
+    const logo = document.getElementById('logo-click-fix');
+    if (logo) {
+        logo.addEventListener('click', () => {
+            if (state.user) navigateTo('public');
+        });
+    }
 }
 
-function navigateTo(targetView) {
+async function navigateTo(targetView) {
     if (!state.user && targetView !== 'login') {
         state.view = 'login';
     } else {
@@ -75,6 +94,7 @@ function navigateTo(targetView) {
     }
     state.searchQuery = '';
     showAlert('', 'ok');
+    await fetchEmployeesData(); // Força atualização de dados ao mudar de tela
     render();
 }
 
@@ -215,9 +235,6 @@ async function handleLoginSubmit(e) {
     } catch (err) { showAlert('RE ou senha incorretos.', 'error'); }
 }
 
-// ==========================================
-// MÓDULO: TELEMETRIA MATRICIAL COMPLETA
-// ==========================================
 function renderPublicView(container) {
     const statusTypes = ['Ativo', 'Férias', 'Atestado', 'Curso', 'Inativo', 'Emprestado'];
     
@@ -371,9 +388,6 @@ function renderPublicView(container) {
     });
 }
 
-// ==========================================
-// MÓDULO: GESTÃO E CADASTRO ADMINISTRATIVO
-// ==========================================
 function renderAdminView(container) {
     container.innerHTML = `
         <div class="admin-grid-layout" style="grid-template-columns: 420px 1fr;">
@@ -531,9 +545,6 @@ async function handleStatusMutation(id, newStatus) {
     } catch (err) { showAlert('Erro ao alterar status.', 'error'); }
 }
 
-// ========================================================
-// MÓDULO: MODAL INTERATIVO - FIX: name="role" RESTAURADO!
-// ========================================================
 function openEditModal(id) {
     const emp = state.employees.find(e => e.id === id);
     if (!emp) return;
@@ -614,7 +625,7 @@ async function handleUpdateEmployee(e) {
         re: formData.get('re').trim(),
         sap: formData.get('sap').trim(),
         name: formData.get('name').trim().toUpperCase(),
-        role: formData.get('role').trim().toUpperCase(),
+        role: formData.get('role').trim().toUpperCase(), 
         cpf: formData.get('cpf').trim() || null,
         rg: formData.get('rg').trim() || null,
         phone: formData.get('phone').trim() || null,
