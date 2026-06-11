@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.8 MASTER
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V4.0 MASTER
 // ==========================================================================
 
 let supabaseClient = null;
@@ -24,7 +24,6 @@ const state = {
     editingEmployeeId: null 
 };
 
-// Carregamento assíncrono seguro
 document.addEventListener('DOMContentLoaded', async () => {
     if (!supabaseClient) return;
     initAppStructure();
@@ -47,7 +46,6 @@ async function fetchEmployeesData() {
     }
 }
 
-// CORREÇÃO: Removido o bloco duplicado do cabeçalho
 function initAppStructure() {
     const app = document.getElementById('app');
     if (!app) return;
@@ -327,13 +325,13 @@ function renderPublicView(container) {
         <div class="panel" style="background:#0f172a; color:#fff; margin-bottom:32px; padding:24px; border-radius:12px;">
           <h3 style="color:#fff; margin-bottom:20px; font-size: 1.1rem; font-weight:700; letter-spacing: 0.02em;">🌍 CONSOLIDAÇÃO TOTAL DA ESTRUTURA</h3>
           <div class="metrics-grid">
-              <div class="metric-card total" style="border-top: 4px solid #fff; background:rgba(255,255,255,0.05);"><span class="metric-val" style="color:#fff">${totalGeral.Total}</span><span class="metric-label" style="color:#94a3b8">Geral</span></div>
-              ${statusTypes.map(s => `
+             <div class="metric-card total" style="border-top: 4px solid #fff; background:rgba(255,255,255,0.05);"><span class="metric-val" style="color:#fff">${totalGeral.Total}</span><span class="metric-label" style="color:#94a3b8">Geral</span></div>
+             ${statusTypes.map(s => `
                 <div class="metric-card ${s.toLowerCase()}">
                     <span class="metric-val">${totalGeral[s]}</span>
                     <span class="metric-label">${s}</span>
                 </div>
-              `).join('')}
+             `).join('')}
           </div>
         </div>
 
@@ -357,11 +355,12 @@ function renderPublicView(container) {
                                     </div>
                                     <h4 class="emp-name">${escapeHtml(emp.name)}</h4>
                                     <div class="emp-details-meta">
-                                        <p><strong>RE:</strong> ${escapeHtml(emp.re)} | <strong>SAP:</strong> ${escapeHtml(emp.sap || '-')} | <strong>CPF:</strong> ${escapeHtml(emp.cpf || '-')}</p>
+                                        <p><strong>RE:</strong> ${escapeHtml(emp.re)} | <strong>RE Tel:</strong> ${escapeHtml(emp.re_tel || '-')} | <strong>SAP:</strong> ${escapeHtml(emp.sap || '-')}</p>
                                         <p><strong>Cargo:</strong> ${escapeHtml(emp.role)}</p>
                                         <hr style="margin:8px 0; border:0; border-top:1px dashed var(--line);">
-                                        <p><strong>RG:</strong> ${escapeHtml(emp.rg || '-')}</p>
+                                        <p><strong>CPF:</strong> ${escapeHtml(emp.cpf || '-')} | <strong>RG:</strong> ${escapeHtml(emp.rg || '-')}</p>
                                         <p><strong>Celular:</strong> ${escapeHtml(emp.phone || '-')}</p>
+                                        <p><strong>E-mail:</strong> ${escapeHtml(emp.email || '-')}</p>
                                         <p><strong>Endereço:</strong> ${escapeHtml(emp.address || '-')}</p>
                                     </div>
                                 </div>
@@ -507,12 +506,18 @@ async function handleCreateEmployee(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
     const payload = {
-        re: formData.get('re').trim(), sap: formData.get('sap').trim(),
-        name: formData.get('name').trim().toUpperCase(), role: formData.get('role'),
-        cpf: formData.get('cpf').trim() || null, rg: formData.get('rg').trim() || null,
-        phone: formData.get('phone').trim() || null, re_tel: formData.get('re_tel').trim() || null,
-        email: formData.get('email').trim() || null, address: formData.get('address').trim() || null,
-        team: formData.get('team'), status: 'Ativo'
+        re: formData.get('re').trim(), 
+        sap: formData.get('sap').trim(),
+        name: formData.get('name').trim().toUpperCase(), 
+        role: formData.get('role'),
+        cpf: formData.get('cpf').trim() || null, 
+        rg: formData.get('rg').trim() || null,
+        phone: formData.get('phone').trim() || null, 
+        re_tel: formData.get('re_tel').trim() || null,
+        email: formData.get('email').trim() || null, 
+        address: formData.get('address').trim() || null,
+        team: formData.get('team'), 
+        status: 'Ativo'
     };
     try {
         const { error } = await supabaseClient.from('employees').insert([payload]);
@@ -521,19 +526,7 @@ async function handleCreateEmployee(e) {
         e.target.reset();
         await fetchEmployeesData();
         render();
-    } catch (err) { showAlert('Erro de cadastro (RE duplicado).', 'error'); }
-}
-
-async function handleStatusMutation(id, newStatus) {
-    try {
-        const { error } = await supabaseClient.from('employees').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', id);
-        if (error) throw error;
-        const target = state.employees.find(e => e.id === id);
-        if (target) target.status = newStatus;
-        showAlert('Status operacional mutado.', 'ok');
-        setTimeout(() => showAlert(''), 2000);
-        render();
-    } catch (err) { showAlert('Erro ao alterar status.', 'error'); }
+    } catch (err) { showAlert('Erro de cadastro (RE ou CPF duplicado).', 'error'); }
 }
 
 function openEditModal(id) {
