@@ -1,5 +1,4 @@
 # Configurações e Credenciais
-config.js
 .env
 .env.local
 .env.*.local

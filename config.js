@@ -1,0 +1,4 @@
+window.GTD_CONFIG = {
+    SUPABASE_URL: "https://gzdatstxnuyooldabgre.supabase.co", 
+    SUPABASE_ANON_KEY: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd6ZGF0c3R4bnV5b29sZGFiZ3JlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExOTIxNjcsImV4cCI6MjA5Njc2ODE2N30.8l9DipzGMn8PSW1bEz65aVd4M0X4z0tADYlWcUpB1LE"
+};
