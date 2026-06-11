@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.4 MASTER
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.5 CORE
 // ==========================================================================
 
 let supabaseClient = null;
@@ -227,7 +227,6 @@ function renderPublicView(container) {
         ESCRITÓRIO: ['Supervisora de Escritório', 'Assistente', 'Atendente']
     };
 
-    // PROCESSADOR DE CONSOLIDAÇÃO TOTAL (BLINDADO CONTRA CAIXA ALTA/BAIXA)
     const totalGeral = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
     
     state.employees.forEach(emp => {
@@ -284,7 +283,7 @@ function renderPublicView(container) {
         telemetryHtml += `
             <div class="panel telemetry-panel" style="margin-bottom:32px;">
                 <h3 style="font-size:1.1rem; color:var(--primary); font-weight:800; border-bottom:2px solid var(--line); padding-bottom:8px; margin-bottom:16px;">📊 NÚCLEO OPERACIONAL: ${nucleo}</h3>
-                <div class="admin-table-wrapper" style="overflow-x: auto; border: 1px solid var(--line); border-radius: 8px;">
+                <div class="admin-table-wrapper">
                     <table class="telemetry-table-matrix">
                         <thead>
                             <tr>
@@ -373,7 +372,7 @@ function renderPublicView(container) {
 }
 
 // ==========================================
-// MÓDULO: GESTÃO E CADASTRO ADMINISTRATIVO
+// MÓDULO: GESTÃO E CADASTRO ADMINISTRATIVO (BOTAO EDITAR RESTAURADO)
 // ==========================================
 function renderAdminView(container) {
     container.innerHTML = `
@@ -444,13 +443,16 @@ function renderAdminView(container) {
                                 <th>Núcleo</th>
                                 <th>Cargo</th>
                                 <th>Status</th>
-                                <th>Ações</th>
+                                <th style="text-align: center;">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${state.employees.map(emp => `
                                 <tr>
-                                    <td><strong>${escapeHtml(emp.re)}</strong></td>
+                                    <td>
+                                        <div><strong>${escapeHtml(emp.re)}</strong></div>
+                                        <div style="font-size:0.75rem; color:var(--muted);">SAP: ${escapeHtml(emp.sap || '-')}</div>
+                                    </td>
                                     <td>${escapeHtml(emp.name)}</td>
                                     <td><span class="table-team-badge ${(emp.team || '').toLowerCase()}">${escapeHtml(emp.team)}</span></td>
                                     <td><small>${escapeHtml(emp.role)}</small></td>
@@ -465,7 +467,10 @@ function renderAdminView(container) {
                                         </select>
                                     </td>
                                     <td>
-                                        <button class="ghost-btn btn-delete-trigger" data-id="${emp.id}" style="color:#ef4444;">Excluir</button>
+                                        <div style="display: flex; gap: 8px; justify-content: center;">
+                                            <button class="secondary-btn btn-edit-trigger" data-id="${emp.id}" style="padding: 6px 10px; font-size: 0.8rem; border-color: #cbd5e0;">Editar</button>
+                                            <button class="ghost-btn btn-delete-trigger" data-id="${emp.id}" style="padding: 6px 10px; font-size: 0.8rem; color: #ef4444;">Excluir</button>
+                                        </div>
                                     </td>
                                 </tr>
                             `).join('')}
@@ -477,9 +482,17 @@ function renderAdminView(container) {
     `;
 
     document.getElementById('form-add-employee').addEventListener('submit', handleCreateEmployee);
+    
     container.querySelectorAll('.status-select').forEach(select => {
         select.addEventListener('change', (e) => handleStatusMutation(e.target.getAttribute('data-id'), e.target.value));
     });
+    
+    container.querySelectorAll('.btn-edit-trigger').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            openEditModal(e.target.getAttribute('data-id'));
+        });
+    });
+
     container.querySelectorAll('.btn-delete-trigger').forEach(btn => {
         btn.addEventListener('click', (e) => handleDeleteEmployee(e.target.getAttribute('data-id')));
     });
@@ -516,6 +529,114 @@ async function handleStatusMutation(id, newStatus) {
         setTimeout(() => showAlert(''), 2000);
         render();
     } catch (err) { showAlert('Erro ao alterar status.', 'error'); }
+}
+
+function openEditModal(id) {
+    const emp = state.employees.find(e => e.id === id);
+    if (!emp) return;
+
+    state.editingEmployeeId = id;
+    const modal = document.getElementById('edit-modal');
+    modal.classList.add('active');
+
+    modal.innerHTML = `
+        <div class="modal-card panel" style="max-width: 500px; width: 100%; margin: 40px auto; position: relative; z-index: 1000;">
+            <h3 style="margin-bottom: 5px;">✏️ Editar Registro</h3>
+            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px;">Atualização de RE: ${escapeHtml(emp.re)}</p>
+            
+            <form id="form-update-employee" class="form" style="gap: 12px;">
+                <div class="form-row-double">
+                    <label><span>RE *</span><input type="text" name="re" required value="${escapeHtml(emp.re)}"></label>
+                    <label><span>SAP</span><input type="text" name="sap" value="${escapeHtml(emp.sap)}"></label>
+                </div>
+                <label><span>Nome Completo *</span><input type="text" name="name" required value="${escapeHtml(emp.name)}"></label>
+                <label><span>Cargo Cadastrado *</span><input type="text" name="role" required value="${escapeHtml(emp.role)}"></label>
+                
+                <div class="form-row-double">
+                    <label><span>CPF</span><input type="text" name="cpf" value="${escapeHtml(emp.cpf)}"></label>
+                    <label><span>RG</span><input type="text" name="rg" value="${escapeHtml(emp.rg)}"></label>
+                </div>
+                <div class="form-row-double">
+                    <label><span>Celular</span><input type="text" name="phone" value="${escapeHtml(emp.phone)}"></label>
+                    <label><span>RE Tel</span><input type="text" name="re_tel" value="${escapeHtml(emp.re_tel)}"></label>
+                </div>
+                <label><span>E-mail</span><input type="email" name="email" value="${escapeHtml(emp.email)}"></label>
+                <label><span>Endereço</span><input type="text" name="address" value="${escapeHtml(emp.address)}"></label>
+                
+                <div class="form-row-double">
+                    <label><span>Equipe</span>
+                        <select name="team">
+                            <option value="DADOS" ${emp.team === 'DADOS' ? 'selected' : ''}>DADOS</option>
+                            <option value="SWT" ${emp.team === 'SWT' ? 'selected' : ''}>SWT</option>
+                            <option value="ESCRITÓRIO" ${emp.team === 'ESCRITÓRIO' ? 'selected' : ''}>ESCRITÓRIO</option>
+                        </select>
+                    </label>
+                    <label><span>Status Operacional</span>
+                        <select name="status">
+                            <option value="Ativo" ${emp.status === 'Ativo' ? 'selected' : ''}>Ativo</option>
+                            <option value="Férias" ${emp.status === 'Férias' ? 'selected' : ''}>Férias</option>
+                            <option value="Atestado" ${emp.status === 'Atestado' ? 'selected' : ''}>Atestado</option>
+                            <option value="Curso" ${emp.status === 'Curso' ? 'selected' : ''}>Curso</option>
+                            <option value="Inativo" ${emp.status === 'Inativo' ? 'selected' : ''}>Inativo</option>
+                            <option value="Emprestado" ${emp.status === 'Emprestado' ? 'selected' : ''}>Emprestado</option>
+                        </select>
+                    </label>
+                </div>
+                
+                <div style="display: flex; gap: 10px; margin-top: 15px;">
+                    <button type="submit" class="primary-btn" style="flex: 1;">Salvar Alterações</button>
+                    <button type="button" id="btn-close-modal" class="secondary-btn" style="flex: 1;">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    `;
+
+    document.getElementById('btn-close-modal').addEventListener('click', closeEditModal);
+    document.getElementById('form-update-employee').addEventListener('submit', handleUpdateEmployee);
+}
+
+function closeEditModal() {
+    const modal = document.getElementById('edit-modal');
+    modal.classList.remove('active');
+    modal.innerHTML = '';
+    state.editingEmployeeId = null;
+}
+
+async function handleUpdateEmployee(e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    
+    const payload = {
+        re: formData.get('re').trim(),
+        sap: formData.get('sap').trim(),
+        name: formData.get('name').trim().toUpperCase(),
+        role: formData.get('role'),
+        cpf: formData.get('cpf').trim() || null,
+        rg: formData.get('rg').trim() || null,
+        phone: formData.get('phone').trim() || null,
+        re_tel: formData.get('re_tel').trim() || null,
+        email: formData.get('email').trim() || null,
+        address: formData.get('address').trim() || null,
+        team: formData.get('team'),
+        status: formData.get('status'),
+        updated_at: new Date().toISOString()
+    };
+
+    try {
+        const { error } = await supabaseClient
+            .from('employees')
+            .update(payload)
+            .eq('id', state.editingEmployeeId);
+
+        if (error) throw error;
+
+        showAlert('Registro modificado com sucesso!', 'ok');
+        closeEditModal();
+        await fetchEmployeesData();
+        render();
+    } catch (err) {
+        showAlert('Erro ao atualizar registro. Verifique a duplicidade de dados.', 'error');
+    }
 }
 
 async function handleDeleteEmployee(id) {
