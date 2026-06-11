@@ -614,7 +614,7 @@ async function handleUpdateEmployee(e) {
         re: formData.get('re').trim(),
         sap: formData.get('sap').trim(),
         name: formData.get('name').trim().toUpperCase(),
-        role: formData.get('role').trim().toUpperCase(), // Agora captura perfeitamente!
+        role: formData.get('role').trim().toUpperCase(),
         cpf: formData.get('cpf').trim() || null,
         rg: formData.get('rg').trim() || null,
         phone: formData.get('phone').trim() || null,
@@ -634,12 +634,13 @@ async function handleUpdateEmployee(e) {
 
         if (error) throw error;
 
-        showAlert('Registro modificado com sucesso absoluto!', 'ok');
+        alert('Registro modificado e atualizado com sucesso absoluto!');
         closeEditModal();
         await fetchEmployeesData();
         render();
     } catch (err) {
-        showAlert('Erro ao atualizar registro. Verifique a integridade ou duplicidade de dados.', 'error');
+        console.error("Erro ao salvar:", err.message);
+        alert('Erro ao salvar no banco de dados: ' + err.message);
     }
 }
 
