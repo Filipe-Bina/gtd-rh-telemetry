@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.7 CORE
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.8 MASTER
 // ==========================================================================
 
 let supabaseClient = null;
@@ -24,11 +24,11 @@ const state = {
     editingEmployeeId: null 
 };
 
-// FIX CRÍTICO: Agora busca os dados direto na inicialização do sistema
+// Carregamento assíncrono seguro
 document.addEventListener('DOMContentLoaded', async () => {
     if (!supabaseClient) return;
     initAppStructure();
-    await fetchEmployeesData(); // Sincroniza a tabela antes do primeiro render
+    await fetchEmployeesData();
     render();
 });
 
@@ -47,20 +47,12 @@ async function fetchEmployeesData() {
     }
 }
 
+// CORREÇÃO: Removido o bloco duplicado do cabeçalho
 function initAppStructure() {
     const app = document.getElementById('app');
     if (!app) return;
     
     app.innerHTML = `
-        <header class="topbar">
-            <div class="topbar-inner">
-                <div class="brand-logo" id="logo-click">
-                    <span class="mini-mark">GTD</span>
-                    <span class="brand-title">Ability Operacional</span>
-                </div>
-                <div id="nav-actions"></div>
-            </div>
-        </header>
         <header class="topbar">
             <div class="topbar-inner">
                 <div class="brand-logo" id="logo-click-fix" style="cursor:pointer;">
@@ -77,7 +69,6 @@ function initAppStructure() {
         <div id="edit-modal" class="modal-overlay"></div>
     `;
 
-    // Garante que o clique na logo limpe buscas e navegue com segurança
     const logo = document.getElementById('logo-click-fix');
     if (logo) {
         logo.addEventListener('click', () => {
@@ -94,7 +85,7 @@ async function navigateTo(targetView) {
     }
     state.searchQuery = '';
     showAlert('', 'ok');
-    await fetchEmployeesData(); // Força atualização de dados ao mudar de tela
+    await fetchEmployeesData(); 
     render();
 }
 
@@ -336,13 +327,13 @@ function renderPublicView(container) {
         <div class="panel" style="background:#0f172a; color:#fff; margin-bottom:32px; padding:24px; border-radius:12px;">
           <h3 style="color:#fff; margin-bottom:20px; font-size: 1.1rem; font-weight:700; letter-spacing: 0.02em;">🌍 CONSOLIDAÇÃO TOTAL DA ESTRUTURA</h3>
           <div class="metrics-grid">
-             <div class="metric-card total" style="border-top: 4px solid #fff; background:rgba(255,255,255,0.05);"><span class="metric-val" style="color:#fff">${totalGeral.Total}</span><span class="metric-label" style="color:#94a3b8">Geral</span></div>
-             ${statusTypes.map(s => `
+              <div class="metric-card total" style="border-top: 4px solid #fff; background:rgba(255,255,255,0.05);"><span class="metric-val" style="color:#fff">${totalGeral.Total}</span><span class="metric-label" style="color:#94a3b8">Geral</span></div>
+              ${statusTypes.map(s => `
                 <div class="metric-card ${s.toLowerCase()}">
                     <span class="metric-val">${totalGeral[s]}</span>
                     <span class="metric-label">${s}</span>
                 </div>
-             `).join('')}
+              `).join('')}
           </div>
         </div>
 
@@ -561,22 +552,21 @@ function openEditModal(id) {
             <form id="form-update-employee" class="form" style="gap: 12px;">
                 <div class="form-row-double">
                     <label><span>RE *</span><input type="text" name="re" required value="${escapeHtml(emp.re)}"></label>
-                    <label><span>SAP</span><input type="text" name="sap" value="${escapeHtml(emp.sap)}"></label>
+                    <label><span>SAP</span><input type="text" name="sap" value="${escapeHtml(emp.sap || '')}"></label>
                 </div>
                 <label><span>Nome Completo *</span><input type="text" name="name" required value="${escapeHtml(emp.name)}"></label>
-                
                 <label><span>Cargo Cadastrado *</span><input type="text" name="role" required value="${escapeHtml(emp.role)}"></label>
                 
                 <div class="form-row-double">
-                    <label><span>CPF</span><input type="text" name="cpf" value="${escapeHtml(emp.cpf)}"></label>
-                    <label><span>RG</span><input type="text" name="rg" value="${escapeHtml(emp.rg)}"></label>
+                    <label><span>CPF</span><input type="text" name="cpf" value="${escapeHtml(emp.cpf || '')}"></label>
+                    <label><span>RG</span><input type="text" name="rg" value="${escapeHtml(emp.rg || '')}"></label>
                 </div>
                 <div class="form-row-double">
-                    <label><span>Celular</span><input type="text" name="phone" value="${escapeHtml(emp.phone)}"></label>
-                    <label><span>RE Tel</span><input type="text" name="re_tel" value="${escapeHtml(emp.re_tel)}"></label>
+                    <label><span>Celular</span><input type="text" name="phone" value="${escapeHtml(emp.phone || '')}"></label>
+                    <label><span>RE Tel</span><input type="text" name="re_tel" value="${escapeHtml(emp.re_tel || '')}"></label>
                 </div>
-                <label><span>E-mail</span><input type="email" name="email" value="${escapeHtml(emp.email)}"></label>
-                <label><span>Endereço</span><input type="text" name="address" value="${escapeHtml(emp.address)}"></label>
+                <label><span>E-mail</span><input type="email" name="email" value="${escapeHtml(emp.email || '')}"></label>
+                <label><span>Endereço</span><input type="text" name="address" value="${escapeHtml(emp.address || '')}"></label>
                 
                 <div class="form-row-double">
                     <label><span>Equipe</span>
@@ -625,7 +615,7 @@ async function handleUpdateEmployee(e) {
         re: formData.get('re').trim(),
         sap: formData.get('sap').trim(),
         name: formData.get('name').trim().toUpperCase(),
-        role: formData.get('role').trim().toUpperCase(), 
+        role: formData.get('role').trim().toUpperCase(),
         cpf: formData.get('cpf').trim() || null,
         rg: formData.get('rg').trim() || null,
         phone: formData.get('phone').trim() || null,
