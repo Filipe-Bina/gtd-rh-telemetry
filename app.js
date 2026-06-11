@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.5 CORE
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.6 CORE
 // ==========================================================================
 
 let supabaseClient = null;
@@ -372,7 +372,7 @@ function renderPublicView(container) {
 }
 
 // ==========================================
-// MÓDULO: GESTÃO E CADASTRO ADMINISTRATIVO (BOTAO EDITAR RESTAURADO)
+// MÓDULO: GESTÃO E CADASTRO ADMINISTRATIVO
 // ==========================================
 function renderAdminView(container) {
     container.innerHTML = `
@@ -531,6 +531,9 @@ async function handleStatusMutation(id, newStatus) {
     } catch (err) { showAlert('Erro ao alterar status.', 'error'); }
 }
 
+// ========================================================
+// MÓDULO: MODAL INTERATIVO - FIX: name="role" RESTAURADO!
+// ========================================================
 function openEditModal(id) {
     const emp = state.employees.find(e => e.id === id);
     if (!emp) return;
@@ -550,6 +553,7 @@ function openEditModal(id) {
                     <label><span>SAP</span><input type="text" name="sap" value="${escapeHtml(emp.sap)}"></label>
                 </div>
                 <label><span>Nome Completo *</span><input type="text" name="name" required value="${escapeHtml(emp.name)}"></label>
+                
                 <label><span>Cargo Cadastrado *</span><input type="text" name="role" required value="${escapeHtml(emp.role)}"></label>
                 
                 <div class="form-row-double">
@@ -610,7 +614,7 @@ async function handleUpdateEmployee(e) {
         re: formData.get('re').trim(),
         sap: formData.get('sap').trim(),
         name: formData.get('name').trim().toUpperCase(),
-        role: formData.get('role'),
+        role: formData.get('role').trim().toUpperCase(), // Agora captura perfeitamente!
         cpf: formData.get('cpf').trim() || null,
         rg: formData.get('rg').trim() || null,
         phone: formData.get('phone').trim() || null,
@@ -630,12 +634,12 @@ async function handleUpdateEmployee(e) {
 
         if (error) throw error;
 
-        showAlert('Registro modificado com sucesso!', 'ok');
+        showAlert('Registro modificado com sucesso absoluto!', 'ok');
         closeEditModal();
         await fetchEmployeesData();
         render();
     } catch (err) {
-        showAlert('Erro ao atualizar registro. Verifique a duplicidade de dados.', 'error');
+        showAlert('Erro ao atualizar registro. Verifique a integridade ou duplicidade de dados.', 'error');
     }
 }
 
