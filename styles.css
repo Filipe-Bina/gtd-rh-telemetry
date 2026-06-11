@@ -1,5 +1,5 @@
 /* ==========================================================================
-   GTD-ABILITY - REPOSITÓRIO VISUAL CORPORATIVO SAAS ULTRA CLEAN
+   GTD-ABILITY - REPOSITÓRIO VISUAL CORPORATIVO SAAS ULTRA CLEAN (V2.2 COMPLETE)
    ========================================================================== */
 
 :root {
@@ -542,9 +542,6 @@ input:focus, select:focus {
   to { transform: translateY(0); opacity: 1; }
 }
 
-.table-team-badge.dados { background: #e0f2fe; color: #0369a1; }
-.table-team-badge.swt { background: #fdf2f8; color: #be185d; }
-
 /* --- CORREÇÕES DE ESPAÇAMENTO E ESTRUTURA DO FORMULÁRIO (V2.1) --- */
 .admin-compact-form {
   gap: 14px !important;
@@ -576,3 +573,14 @@ input:focus, select:focus {
 /* Modificações estéticas extras para os crachás de núcleo */
 .emp-badge-team.dados, .table-team-badge.dados { background: #e0f2fe; color: #0369a1; }
 .emp-badge-team.swt, .table-team-badge.swt { background: #fdf2f8; color: #be185d; }
+
+/* FIX DEFINITIVO: Resolve encavalamento de títulos e subtítulos no painel */
+.admin-panel-form h3 {
+  margin-bottom: 6px !important;
+}
+
+.admin-panel-form .panel-subtitle {
+  margin: 0 0 20px 0 !important; /* Reseta a margem negativa superior antiga e garante espaçamento abaixo */
+  display: block;
+  line-height: 1.4;
+}
