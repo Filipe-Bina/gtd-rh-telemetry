@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V4.1 CORE
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V4.5 PRO
 // ==========================================================================
 
 let supabaseClient = null;
@@ -12,7 +12,7 @@ try {
 } catch (configError) {
     console.error("Erro Crítico:", configError.message);
     document.addEventListener('DOMContentLoaded', () => {
-        document.getElementById('app').innerHTML = `<div class="message show error" style="max-width:600px; margin:50px auto;">Erro de Configuração: Verifique o config.js</div>`;
+        document.getElementById('app').innerHTML = `<div class="message show error" style="max-width:600px; margin:50px auto;">Erro de Configuração: Verifique as chaves no config.js</div>`;
     });
 }
 
@@ -46,7 +46,6 @@ async function fetchEmployeesData() {
     }
 }
 
-// CORREÇÃO VISUAL: Removido o segundo bloco de <header> que duplicava a logo
 function initAppStructure() {
     const app = document.getElementById('app');
     if (!app) return;
@@ -225,13 +224,9 @@ async function handleLoginSubmit(e) {
     } catch (err) { showAlert('RE ou senha incorretos.', 'error'); }
 }
 
-// ==========================================
-// MÓDULO: TELEMETRIA MATRICIAL REESTRUTURADA
-// ==========================================
 function renderPublicView(container) {
     const statusTypes = ['Ativo', 'Férias', 'Atestado', 'Curso', 'Inativo', 'Emprestado'];
     
-    // CORREÇÃO DE CARGOS: Alinhado milimetricamente com os novos cargos do banco de dados
     const nucleos = {
         DADOS: ['COORDENADOR', 'SUPERVISOR DE DADOS', 'APOIO DE SUPERVISOR', 'TÉCNICO DE DADOS II', 'TÉCNICO DE DADOS I'],
         SWT: ['SUPERVISOR DE REDE', 'TÉCNICO MULTSKILL', 'TÉCNICO DE FIBRA II', 'TÉCNICO DE FIBRA I', 'AUXILIAR'],
@@ -365,6 +360,7 @@ function renderPublicView(container) {
                                         <hr style="margin:8px 0; border:0; border-top:1px dashed var(--line);">
                                         <p><strong>CPF:</strong> ${escapeHtml(emp.cpf || '-')} | <strong>RG:</strong> ${escapeHtml(emp.rg || '-')}</p>
                                         <p><strong>Celular:</strong> ${escapeHtml(emp.phone || '-')}</p>
+                                        <p><strong>E-mail:</strong> ${escapeHtml(emp.email || '-')}</p>
                                         <p><strong>Endereço:</strong> ${escapeHtml(emp.address || '-')}</p>
                                     </div>
                                 </div>
@@ -397,14 +393,13 @@ function renderAdminView(container) {
                     
                     <label><span>Cargo Cadastrado *</span>
                         <select name="role" required>
-                            <option value="Administrador Master do Sistema">Administrador Master do Sistema</option>
-                            <option value="Coordenador">Coordenador</option>
-                            <option value="Supervisor de Dados">Supervisor de Dados</option>
-                            <option value="Supervisor de Rede">Supervisor de Rede</option>
-                            <option value="Supervisora de Escritório">Supervisora de Escritório</option>
-                            <option value="Apoio de Supervisor">Apoio de Supervisor</option>
-                            <option value="Assistente">Assistente</option>
-                            <option value="Atendente">Atendente</option>
+                            <option value="COORDENADOR">COORDENADOR</option>
+                            <option value="SUPERVISOR DE DADOS">SUPERVISOR DE DADOS</option>
+                            <option value="SUPERVISOR DE REDE">SUPERVISOR DE REDE</option>
+                            <option value="SUPERVISORA DE ESCRITÓRIO">SUPERVISORA DE ESCRITÓRIO</option>
+                            <option value="APOIO DE SUPERVISOR">APOIO DE SUPERVISOR</option>
+                            <option value="ASSISTENTE">ASSISTENTE</option>
+                            <option value="ATENDENTE">ATENDENTE</option>
                             <option value="TÉCNICO DE DADOS II">TÉCNICO DE DADOS II</option>
                             <option value="TÉCNICO DE DADOS I">TÉCNICO DE DADOS I</option>
                             <option value="TÉCNICO MULTSKILL">TÉCNICO MULTSKILL</option>
