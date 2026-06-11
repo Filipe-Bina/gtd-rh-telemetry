@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - MOTOR CORE V2
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - MOTOR CORE V2.1
 // ==========================================================================
 
 let supabaseClient = null;
@@ -29,7 +29,7 @@ const state = {
     user: null,     
     employees: [],  
     searchQuery: '',
-    editingEmployeeId: null // Controle do ID do funcionário em edição (Modal)
+    editingEmployeeId: null 
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -141,7 +141,7 @@ function renderTopbarActions() {
 }
 
 // ==========================================
-// MÓDULO: INTERFACE PÚBLICA DE TELEMETRIA
+// MÓDULO: INTERFACE PÚBLICA DE TELEMETRIA (ATUALIZADA)
 // ==========================================
 function renderPublicView(container) {
     const stats = { DADOS: {}, SWT: {} };
@@ -225,10 +225,17 @@ function renderPublicView(container) {
                                         <div class="emp-details-meta">
                                             <p><strong>RE:</strong> ${escapeHtml(emp.re)} | <strong>SAP:</strong> ${escapeHtml(emp.sap || '-')}</p>
                                             <p><strong>Cargo:</strong> ${escapeHtml(emp.role)}</p>
-                                            <hr style="margin: 8px 0; border: 0; border-top: 1px dashed var(--line);">
-                                            <p><strong>Celular:</strong> ${escapeHtml(emp.phone || '-')}</p>
-                                            <p><strong>E-mail:</strong> ${escapeHtml(emp.email || '-')}</p>
-                                            <p><strong>RE Tel:</strong> ${escapeHtml(emp.re_tel || '-')}</p>
+                                            
+                                            <hr style="margin: 10px 0; border: 0; border-top: 1px dashed var(--line);">
+                                            
+                                            <div class="ficha-publica-grid">
+                                                <p><strong>CPF:</strong> ${escapeHtml(emp.cpf || '-')}</p>
+                                                <p><strong>RG:</strong> ${escapeHtml(emp.rg || '-')}</p>
+                                                <p><strong>Celular:</strong> ${escapeHtml(emp.phone || '-')}</p>
+                                                <p><strong>RE Tel:</strong> ${escapeHtml(emp.re_tel || '-')}</p>
+                                            </div>
+                                            <p style="margin-top: 4px;"><strong>E-mail:</strong> ${escapeHtml(emp.email || '-')}</p>
+                                            <p style="margin-top: 4px;"><strong>Endereço:</strong> ${escapeHtml(emp.address || '-')}</p>
                                         </div>
                                     </div>
                                 `).join('')}
@@ -289,28 +296,31 @@ function renderAdminView(container) {
     if (!state.user) { navigateTo('login'); return; }
 
     container.innerHTML = `
-        <div class="admin-grid-layout" style="grid-template-columns: 420px 1fr; gap: 24px;">
+        <div class="admin-grid-layout">
             <div class="panel admin-panel-form">
-                <h3>👥 Inclusão Cadastral Completa</h3>
+                <h3>👥 Inclusão Cadastral</h3>
                 <p class="panel-subtitle">Insira o técnico com todos os metadados corporativos</p>
                 
-                <form id="form-add-employee" class="form" style="gap: 12px;">
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <form id="form-add-employee" class="form admin-compact-form">
+                    <div class="form-row-double">
                         <label><span>RE *</span><input type="text" name="re" required placeholder="30123"></label>
                         <label><span>SAP</span><input type="text" name="sap" placeholder="100023"></label>
                     </div>
+                    
                     <label><span>Nome Completo *</span><input type="text" name="name" required placeholder="EX: MARCOS SILVA"></label>
                     <label><span>Cargo Cadastrado *</span><input type="text" name="role" required placeholder="EX: TÉCNICO II"></label>
                     
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                    <div class="form-row-double">
                         <label><span>CPF</span><input type="text" name="cpf" placeholder="000.000.000-00"></label>
                         <label><span>RG</span><input type="text" name="rg" placeholder="00.000.000-0"></label>
                     </div>
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <label><span>Celular</span><input type="text" name="phone" placeholder="(11) 99999-9999"></label>
+                    
+                    <div class="form-row-double">
+                        <label><span>Celular / WhatsApp</span><input type="text" name="phone" placeholder="(11) 99999-9999"></label>
                         <label><span>RE Tel</span><input type="text" name="re_tel" placeholder="RE Telefone"></label>
                     </div>
-                    <label><span>E-mail</span><input type="email" name="email" placeholder="nome@empresa.com"></label>
+                    
+                    <label><span>E-mail Corporativo</span><input type="email" name="email" placeholder="nome@empresa.com"></label>
                     <label><span>Endereço Residencial</span><input type="text" name="address" placeholder="Rua, Número, Bairro"></label>
                     
                     <label><span>Núcleo / Equipe *</span>
@@ -319,38 +329,38 @@ function renderAdminView(container) {
                             <option value="SWT">SWT</option>
                         </select>
                     </label>
-                    <button type="submit" class="primary-btn" style="margin-top: 8px;">Cadastrar Novo Técnico</button>
+                    <button type="submit" class="primary-btn" style="margin-top: 10px;">Cadastrar Novo Técnico</button>
                 </form>
             </div>
 
             <div class="panel admin-panel-list">
-                <div class="panel-header-action" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <div class="panel-header-action">
                     <h3>📋 Modificações, Status e Baixas</h3>
                     <span class="counter-badge-s">Total: ${state.employees.length}</span>
                 </div>
                 
-                <div class="admin-table-wrapper" style="overflow-x: auto;">
-                    <table class="admin-table" style="width: 100%; border-collapse: collapse; text-align: left;">
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
                         <thead>
-                            <tr style="background: #f7fafc; border-bottom: 2px solid #edf2f7;">
-                                <th style="padding: 12px;">RE / SAP</th>
-                                <th style="padding: 12px;">Nome</th>
-                                <th style="padding: 12px;">Núcleo</th>
-                                <th style="padding: 12px;">Status</th>
-                                <th style="padding: 12px; text-align: center;">Ações</th>
+                            <tr>
+                                <th>RE / SAP</th>
+                                <th>Nome</th>
+                                <th>Núcleo</th>
+                                <th>Status</th>
+                                <th style="text-align: center;">Ações</th>
                             </tr>
                         </thead>
                         <tbody>
                             ${state.employees.map(emp => `
-                                <tr style="border-bottom: 1px solid #edf2f7;">
-                                    <td style="padding: 12px;">
+                                <tr>
+                                    <td>
                                         <div><strong>${escapeHtml(emp.re)}</strong></div>
                                         <div style="font-size: 0.75rem; color: var(--muted);">SAP: ${escapeHtml(emp.sap || '-')}</div>
                                     </td>
-                                    <td style="padding: 12px;">${escapeHtml(emp.name)}</td>
-                                    <td style="padding: 12px;"><span class="table-team-badge ${escapeHtml((emp.team || '').toLowerCase())}">${escapeHtml(emp.team)}</span></td>
-                                    <td style="padding: 12px;">
-                                        <select class="status-select select-${(emp.status || 'ativo').toLowerCase()}" data-id="${emp.id}" style="padding: 6px; border-radius: 4px;">
+                                    <td>${escapeHtml(emp.name)}</td>
+                                    <td><span class="table-team-badge ${escapeHtml((emp.team || '').toLowerCase())}">${escapeHtml(emp.team)}</span></td>
+                                    <td>
+                                        <select class="status-select select-${(emp.status || 'ativo').toLowerCase()}" data-id="${emp.id}">
                                             <option value="Ativo" ${emp.status === 'Ativo' ? 'selected' : ''}>Ativo</option>
                                             <option value="Férias" ${emp.status === 'Férias' ? 'selected' : ''}>Férias</option>
                                             <option value="Atestado" ${emp.status === 'Atestado' ? 'selected' : ''}>Atestado</option>
@@ -359,7 +369,7 @@ function renderAdminView(container) {
                                             <option value="Emprestado" ${emp.status === 'Emprestado' ? 'selected' : ''}>Emprestado</option>
                                         </select>
                                     </td>
-                                    <td style="padding: 12px; text-align: center;">
+                                    <td>
                                         <div style="display: flex; gap: 8px; justify-content: center;">
                                             <button class="secondary-btn btn-edit-trigger" data-id="${emp.id}" style="padding: 6px 10px; font-size: 0.8rem; border-color: #cbd5e0;">Editar</button>
                                             <button class="ghost-btn btn-delete-trigger" data-id="${emp.id}" style="padding: 6px 10px; font-size: 0.8rem; color: #ef4444;">Excluir</button>
@@ -374,7 +384,6 @@ function renderAdminView(container) {
         </div>
     `;
 
-    // Listeners do painel administrativo
     document.getElementById('form-add-employee').addEventListener('submit', handleCreateEmployee);
 
     container.querySelectorAll('.status-select').forEach(select => {
@@ -396,7 +405,6 @@ function renderAdminView(container) {
     });
 }
 
-// Handler de Criação (C do CRUD)
 async function handleCreateEmployee(e) {
     e.preventDefault();
     const formData = new FormData(e.target);
@@ -430,7 +438,6 @@ async function handleCreateEmployee(e) {
     }
 }
 
-// Handler de Mutação de Status Rápido
 async function handleStatusMutation(id, newStatus) {
     try {
         const { error } = await supabaseClient.from('employees').update({ status: newStatus, updated_at: new Date().toISOString() }).eq('id', id);
@@ -446,9 +453,6 @@ async function handleStatusMutation(id, newStatus) {
     }
 }
 
-// ==========================================
-// MÓDULO: MODAL INTERATIVO DE ATUALIZAÇÃO (U)
-// ==========================================
 function openEditModal(id) {
     const emp = state.employees.find(e => e.id === id);
     if (!emp) return;
@@ -460,28 +464,28 @@ function openEditModal(id) {
     modal.innerHTML = `
         <div class="modal-card panel" style="max-width: 500px; width: 100%; margin: 40px auto; position: relative; z-index: 1000;">
             <h3 style="margin-bottom: 5px;">✏️ Editar Registro</h3>
-            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px;">Atualização dos metadados corporativos de RE: ${escapeHtml(emp.re)}</p>
+            <p style="color: var(--muted); font-size: 0.85rem; margin-bottom: 20px;">Atualização de RE: ${escapeHtml(emp.re)}</p>
             
             <form id="form-update-employee" class="form" style="gap: 12px;">
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-row-double">
                     <label><span>RE *</span><input type="text" name="re" required value="${escapeHtml(emp.re)}"></label>
                     <label><span>SAP</span><input type="text" name="sap" value="${escapeHtml(emp.sap)}"></label>
                 </div>
                 <label><span>Nome Completo *</span><input type="text" name="name" required value="${escapeHtml(emp.name)}"></label>
                 <label><span>Cargo Cadastrado *</span><input type="text" name="role" required value="${escapeHtml(emp.role)}"></label>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-row-double">
                     <label><span>CPF</span><input type="text" name="cpf" value="${escapeHtml(emp.cpf)}"></label>
                     <label><span>RG</span><input type="text" name="rg" value="${escapeHtml(emp.rg)}"></label>
                 </div>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-row-double">
                     <label><span>Celular</span><input type="text" name="phone" value="${escapeHtml(emp.phone)}"></label>
                     <label><span>RE Tel</span><input type="text" name="re_tel" value="${escapeHtml(emp.re_tel)}"></label>
                 </div>
                 <label><span>E-mail</span><input type="email" name="email" value="${escapeHtml(emp.email)}"></label>
                 <label><span>Endereço</span><input type="text" name="address" value="${escapeHtml(emp.address)}"></label>
                 
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+                <div class="form-row-double">
                     <label><span>Equipe</span>
                         <select name="team">
                             <option value="DADOS" ${emp.team === 'DADOS' ? 'selected' : ''}>DADOS</option>
@@ -547,23 +551,20 @@ async function handleUpdateEmployee(e) {
 
         if (error) throw error;
 
-        showAlert('Registro modificado e replicado com sucesso!', 'ok');
+        showAlert('Registro modificado com sucesso!', 'ok');
         closeEditModal();
         await fetchEmployeesData();
         render();
     } catch (err) {
-        showAlert('Erro ao atualizar registro. Verifique duplicidade de dados.', 'error');
+        showAlert('Erro ao atualizar registro. Verifique a duplicidade de dados.', 'error');
     }
 }
 
-// ==========================================
-// MÓDULO: EXCLUSÃO DE REGISTRO (D DO CRUD)
-// ==========================================
 async function handleDeleteEmployee(id) {
     const emp = state.employees.find(e => e.id === id);
     if (!emp) return;
 
-    const confirmCheck = confirm(`⚠️ ATENÇÃO CRÍTICA:\nVocê confirma a exclusão permanente do técnico ${emp.name} (RE: ${emp.re}) da base de dados? Esta ação é irreversível.`);
+    const confirmCheck = confirm(`⚠️ ATENÇÃO CRÍTICA:\nConfirmas a exclusão permanente do técnico ${emp.name} (RE: ${emp.re})? Esta ação é irreversível.`);
     if (!confirmCheck) return;
 
     try {
@@ -574,7 +575,7 @@ async function handleDeleteEmployee(id) {
 
         if (error) throw error;
 
-        showAlert('Funcionário removido com sucesso da malha do sistema.', 'ok');
+        showAlert('Funcionário removido com sucesso do sistema.', 'ok');
         await fetchEmployeesData();
         render();
     } catch (err) {

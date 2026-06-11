@@ -544,3 +544,35 @@ input:focus, select:focus {
 
 .table-team-badge.dados { background: #e0f2fe; color: #0369a1; }
 .table-team-badge.swt { background: #fdf2f8; color: #be185d; }
+
+/* --- CORREÇÕES DE ESPAÇAMENTO E ESTRUTURA DO FORMULÁRIO (V2.1) --- */
+.admin-compact-form {
+  gap: 14px !important;
+}
+
+.admin-compact-form label {
+  gap: 4px !important;
+  margin-bottom: 2px;
+}
+
+.form-row-double {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  width: 100%;
+}
+
+.ficha-publica-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+  margin: 6px 0;
+}
+
+.ficha-publica-grid p {
+  margin: 0 !important;
+}
+
+/* Modificações estéticas extras para os crachás de núcleo */
+.emp-badge-team.dados, .table-team-badge.dados { background: #e0f2fe; color: #0369a1; }
+.emp-badge-team.swt, .table-team-badge.swt { background: #fdf2f8; color: #be185d; }
