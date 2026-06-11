@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.1 CORE
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V3.2 CORE
 // ==========================================================================
 
 let supabaseClient = null;
@@ -16,6 +16,7 @@ try {
     });
 }
 
+// ESTADO GLOBAL: Forçado estritamente em 'login' para bloquear visualizações diretas
 const state = {
     view: 'login', 
     user: null,     
@@ -24,10 +25,11 @@ const state = {
     editingEmployeeId: null 
 };
 
+// Inicialização segura controlada por travas de Auth
 document.addEventListener('DOMContentLoaded', () => {
     if (!supabaseClient) return;
     initAppStructure();
-    render();
+    render(); // Renderiza imediatamente a tela de login vazia sem vazamento de dados
 });
 
 async function fetchEmployeesData() {
@@ -73,7 +75,6 @@ function navigateTo(targetView) {
     } else {
         state.view = targetView;
     }
-    state.searchQuery = '';
     showAlert('', 'ok');
     render();
 }
@@ -112,7 +113,7 @@ function renderTopbarActions() {
     if (state.user) {
         actions.innerHTML = `
             <div class="user-chip">
-                <span><span>👤 ${escapeHtml(state.user.name)}</span> <small style="background:rgba(255,255,255,0.15); padding:2px 6px; border-radius:4px; font-size:0.75rem;">${escapeHtml(state.user.role)}</small></span>
+                <span>👤 ${escapeHtml(state.user.name)} <small style="background:rgba(79,70,229,0.1); padding:2px 6px; border-radius:4px; font-size:0.75rem; color:var(--primary); font-weight:700;">${escapeHtml(state.user.role)}</small></span>
                 <button class="secondary-btn shrink-btn" id="btn-toggle-view">
                     ${state.view === 'public' ? 'Painel Admin' : 'Consultas / Dashboard'}
                 </button>
@@ -127,10 +128,13 @@ function renderTopbarActions() {
             navigateTo('login');
         });
     } else {
-        actions.innerHTML = `<span class="brand-sub">Acesso Restrito</span>`;
+        actions.innerHTML = `<span class="brand-sub" style="font-weight:700; color:var(--muted);">Mesa de Autenticação</span>`;
     }
 }
 
+// ==========================================
+// MÓDULO: TELA DE LOGIN / CADASTRO PROTEGIDO
+// ==========================================
 function renderLoginView(container) {
     container.innerHTML = `
         <div class="auth-shell">
@@ -207,7 +211,7 @@ async function handleLoginSubmit(e) {
         if (error) throw error;
         if (data.success) {
             state.user = { name: data.name, role: data.role, team: data.team, re: data.re };
-            await fetchEmployeesData();
+            await fetchEmployeesData(); // Puxa os dados apenas APÓS o login bem-sucedido
             navigateTo('public');
         } else {
             showAlert(data.message, 'error');
@@ -216,12 +220,12 @@ async function handleLoginSubmit(e) {
 }
 
 // ==========================================
-// MÓDULO: TELEMETRIA AVANÇADA POR CARGO (V3.1)
+// MÓDULO: TELEMETRIA MATRICIAL COMPLETA
 // ==========================================
 function renderPublicView(container) {
     const statusTypes = ['Ativo', 'Férias', 'Atestado', 'Curso', 'Inativo', 'Emprestado'];
     
-    // Organograma atualizado batendo com a estrutura corporativa exata
+    // Organograma fixado por núcleos regulamentados
     const nucleos = {
         DADOS: ['Administrador Master do Sistema', 'Coordenador', 'Supervisor de Dados', 'Apoio de Supervisor', 'TÉCNICO DE DADOS II', 'TÉCNICO DE DADOS I'],
         SWT: ['Supervisor de Rede', 'TÉCNICO MULTSKILL', 'TÉCNICO DE FIBRA II', 'TÉCNICO DE FIBRA I', 'AUXILIAR'],
@@ -240,7 +244,12 @@ function renderPublicView(container) {
             statusTypes.forEach(s => statsCargo[s] = 0);
 
             state.employees.forEach(emp => {
-                if (emp.team === nucleo && emp.role === cargo) {
+                // Sanitização de string para bater equipes minúsculas/maiúsculas sem erro
+                const empTeam = (emp.team || '').toUpperCase().trim();
+                const empRole = (emp.role || '').toLowerCase().trim();
+                const targetRole = cargo.toLowerCase().trim();
+
+                if (empTeam === nucleo && empRole === targetRole) {
                     statsCargo['Total']++;
                     totaisNucleo['Total']++;
                     if (statsCargo[emp.status] !== undefined) {
@@ -261,7 +270,7 @@ function renderPublicView(container) {
 
         telemetryHtml += `
             <div class="panel telemetry-panel" style="margin-bottom:24px;">
-                <h3>📊 NÚCLEO ${nucleo}</h3>
+                <h3>📊 NÚCLEO INTERNO: ${nucleo}</h3>
                 <div class="admin-table-wrapper">
                     <table class="telemetry-table-matrix">
                         <thead>
@@ -302,7 +311,7 @@ function renderPublicView(container) {
             <p>Visão estatística distribuída e fatiada pelo organograma Ability</p>
         </div>
 
-        <div class="panel" style="background:#1e1b4b; color:#fff; margin-bottom:32px;">
+        <div class="panel" style="background:#1e1b4b; color:#fff; margin-bottom:32px; box-shadow: var(--shadow-md);">
           <h3 style="color:#fff; margin-bottom:15px;">🌍 CONSOLIDAÇÃO TOTAL DA ESTRUTURA</h3>
           <div class="metrics-grid">
              <div class="metric-card total" style="background:rgba(255,255,255,0.1); border:0;"><span class="metric-val" style="color:#fff">${totalGeral['Total']}</span><span class="metric-label" style="color:#cbd5e1">Geral</span></div>
@@ -330,7 +339,7 @@ function renderPublicView(container) {
                             ${filtered.map(emp => `
                                 <div class="employee-card-public status-${emp.status.toLowerCase()}">
                                     <div class="emp-main-info">
-                                        <span class="emp-badge-team ${emp.team.toLowerCase()}">${escapeHtml(emp.team)}</span>
+                                        <span class="emp-badge-team ${(emp.team || '').toLowerCase()}">${escapeHtml(emp.team)}</span>
                                         <span class="emp-badge-status ${emp.status.toLowerCase()}">${escapeHtml(emp.status)}</span>
                                     </div>
                                     <h4 class="emp-name">${escapeHtml(emp.name)}</h4>
@@ -438,7 +447,7 @@ function renderAdminView(container) {
                                 <tr>
                                     <td><strong>${escapeHtml(emp.re)}</strong></td>
                                     <td>${escapeHtml(emp.name)}</td>
-                                    <td><span class="table-team-badge ${emp.team.toLowerCase()}">${escapeHtml(emp.team)}</span></td>
+                                    <td><span class="table-team-badge ${(emp.team || '').toLowerCase()}">${escapeHtml(emp.team)}</span></td>
                                     <td><small>${escapeHtml(emp.role)}</small></td>
                                     <td>
                                         <select class="status-select select-${emp.status.toLowerCase()}" data-id="${emp.id}">
