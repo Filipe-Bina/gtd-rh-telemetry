@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V4.0 MASTER
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V4.1 CORE
 // ==========================================================================
 
 let supabaseClient = null;
@@ -46,6 +46,7 @@ async function fetchEmployeesData() {
     }
 }
 
+// CORREÇÃO VISUAL: Removido o segundo bloco de <header> que duplicava a logo
 function initAppStructure() {
     const app = document.getElementById('app');
     if (!app) return;
@@ -224,13 +225,17 @@ async function handleLoginSubmit(e) {
     } catch (err) { showAlert('RE ou senha incorretos.', 'error'); }
 }
 
+// ==========================================
+// MÓDULO: TELEMETRIA MATRICIAL REESTRUTURADA
+// ==========================================
 function renderPublicView(container) {
     const statusTypes = ['Ativo', 'Férias', 'Atestado', 'Curso', 'Inativo', 'Emprestado'];
     
+    // CORREÇÃO DE CARGOS: Alinhado milimetricamente com os novos cargos do banco de dados
     const nucleos = {
-        DADOS: ['Administrador Master do Sistema', 'Coordenador', 'Supervisor de Dados', 'Apoio de Supervisor', 'TÉCNICO DE DADOS II', 'TÉCNICO DE DADOS I'],
-        SWT: ['Supervisor de Rede', 'TÉCNICO MULTSKILL', 'TÉCNICO DE FIBRA II', 'TÉCNICO DE FIBRA I', 'AUXILIAR'],
-        ESCRITÓRIO: ['Supervisora de Escritório', 'Assistente', 'Atendente']
+        DADOS: ['COORDENADOR', 'SUPERVISOR DE DADOS', 'APOIO DE SUPERVISOR', 'TÉCNICO DE DADOS II', 'TÉCNICO DE DADOS I'],
+        SWT: ['SUPERVISOR DE REDE', 'TÉCNICO MULTSKILL', 'TÉCNICO DE FIBRA II', 'TÉCNICO DE FIBRA I', 'AUXILIAR'],
+        ESCRITÓRIO: ['SUPERVISORA DE ESCRITÓRIO', 'ASSISTENTE', 'ATENDENTE']
     };
 
     const totalGeral = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
@@ -360,7 +365,6 @@ function renderPublicView(container) {
                                         <hr style="margin:8px 0; border:0; border-top:1px dashed var(--line);">
                                         <p><strong>CPF:</strong> ${escapeHtml(emp.cpf || '-')} | <strong>RG:</strong> ${escapeHtml(emp.rg || '-')}</p>
                                         <p><strong>Celular:</strong> ${escapeHtml(emp.phone || '-')}</p>
-                                        <p><strong>E-mail:</strong> ${escapeHtml(emp.email || '-')}</p>
                                         <p><strong>Endereço:</strong> ${escapeHtml(emp.address || '-')}</p>
                                     </div>
                                 </div>
@@ -531,7 +535,7 @@ async function handleCreateEmployee(e) {
 
 function openEditModal(id) {
     const emp = state.employees.find(e => e.id === id);
-    if (!emp) return;
+    if (!not emp) return;
 
     state.editingEmployeeId = id;
     const modal = document.getElementById('edit-modal');
