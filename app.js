@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V5.6 CORE
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V5.7 CORE
 // ==========================================================================
 
 let supabaseClient = null;
@@ -265,12 +265,20 @@ function renderPublicView(container) {
                     totaisNucleo.Total++;
                     
                     const statusNormalizado = (emp.status || '').toUpperCase().trim();
-                    if (statusNormalizado === 'ATIVO') { statsCargo.Ativo++; totaisNucleo.Ativo++; }
-                    else if (statusNormalizado === 'FÉRIAS' || statusNormalizado === 'FERIAS') { statsCargo.Férias++; totaisNucleo.Férias++; }
-                    else if (statusNormalizado === 'ATESTADO') { statsCargo.Atestado++; totaisNucleo.Atestado++; }
-                    else if (statusNormalizado === 'CURSO') { statsCargo.Curso++; totaisNucleo.Curso++; }
-                    else if (statusNormalizado === 'INATIVO') { statsCargo.Inativo++; totaisNucleo.Inativo++; }
-                    else if (statusNormalizado === 'EMPRESTADO') { statsCargo.Emprestado++; totaisNucleo.Emprestado++; }
+                    // FIX SINTAXE: Chaves adicionadas para garantir a integridade dos blocos de controle
+                    if (statusNormalizado === 'ATIVO') { 
+                        statsCargo.Ativo++; totaisNucleo.Ativo++; 
+                    } else if (statusNormalizado === 'FÉRIAS' || statusNormalizado === 'FERIAS') { 
+                        statsCargo.Férias++; totaisNucleo.Férias++; 
+                    } else if (statusNormalizado === 'ATESTADO') { 
+                        statsCargo.Atestado++; totaisNucleo.Atestado++; 
+                    } else if (statusNormalizado === 'CURSO') { 
+                        statsCargo.Curso++; totaisNucleo.Curso++; 
+                    } else if (statusNormalizado === 'INATIVO') { 
+                        statsCargo.Inativo++; totaisNucleo.Inativo++; 
+                    } else if (statusNormalizado === 'EMPRESTADO') { 
+                        statsCargo.Emprestado++; totaisNucleo.Emprestado++; 
+                    }
                 }
             });
 
@@ -316,7 +324,6 @@ function renderPublicView(container) {
         (emp.name || '').toLowerCase().includes(state.searchQuery.toLowerCase()) || (emp.re || '').includes(state.searchQuery)
     );
 
-    // Normalização das tags de classe para o núcleo "Escritório" com acentuação tratada
     const getCleanTeamClass = (team) => {
         const clean = (team || '').toUpperCase().trim();
         if (clean === 'ESCRITÓRIO' || clean === 'ESCRITORIO') return 'escritorio';
@@ -649,14 +656,12 @@ async function handleUpdateEmployee(e) {
     }
 }
 
-// CORREÇÃO DE PERSISTÊNCIA REATIVA SÊNIOR (Evita loops e travamento de DOM)
+// REATIVIDADE BLINDADA EM SEGUNDO PLANO: Salva o status instantaneamente sem quebrar o loop do DOM
 async function handleStatusMutation(id, newStatus) {
-    // 1. Atualiza imediatamente a memória local para resposta visual instantânea
     const target = state.employees.find(e => e.id === id);
     if (target) target.status = newStatus;
 
     try {
-        // 2. Dispara a persistência em segundo plano assíncrona
         const { error } = await supabaseClient
             .from('employees')
             .update({ status: newStatus, updated_at: new Date().toISOString() })
@@ -664,7 +669,6 @@ async function handleStatusMutation(id, newStatus) {
             
         if (error) throw error;
         
-        // 3. Recarrega os dados em background de forma limpa
         const { data } = await supabaseClient.from('employees').select('*').order('name', { ascending: true });
         if (data) state.employees = data;
     } catch (err) { 
