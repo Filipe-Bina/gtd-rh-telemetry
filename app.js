@@ -535,7 +535,7 @@ async function handleCreateEmployee(e) {
 
 function openEditModal(id) {
     const emp = state.employees.find(e => e.id === id);
-    if (!not emp) return;
+    if (!emp) return;
 
     state.editingEmployeeId = id;
     const modal = document.getElementById('edit-modal');
