@@ -1,5 +1,5 @@
 // ==========================================================================
-// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V5.0 MASTER
+// GTD-ABILITY SISTEMA DE TELEMETRIA E CONSULTA DE FUNCIONÁRIOS - V5.6 CORE
 // ==========================================================================
 
 let supabaseClient = null;
@@ -316,6 +316,13 @@ function renderPublicView(container) {
         (emp.name || '').toLowerCase().includes(state.searchQuery.toLowerCase()) || (emp.re || '').includes(state.searchQuery)
     );
 
+    // Normalização das tags de classe para o núcleo "Escritório" com acentuação tratada
+    const getCleanTeamClass = (team) => {
+        const clean = (team || '').toUpperCase().trim();
+        if (clean === 'ESCRITÓRIO' || clean === 'ESCRITORIO') return 'escritorio';
+        return clean.toLowerCase();
+    };
+
     container.innerHTML = `
         <div class="section-head">
             <h2>Mesa de Telemetria Operacional</h2>
@@ -350,7 +357,7 @@ function renderPublicView(container) {
                             ${filtered.map(emp => `
                                 <div class="employee-card-public status-${emp.status.toLowerCase()}">
                                     <div class="emp-main-info">
-                                        <span class="emp-badge-team ${(emp.team || '').toLowerCase()}">${escapeHtml(emp.team)}</span>
+                                        <span class="emp-badge-team ${getCleanTeamClass(emp.team)}">${escapeHtml(emp.team)}</span>
                                         <span class="emp-badge-status ${emp.status.toLowerCase()}">${escapeHtml(emp.status)}</span>
                                     </div>
                                     <h4 class="emp-name">${escapeHtml(emp.name)}</h4>
@@ -359,8 +366,7 @@ function renderPublicView(container) {
                                         <p><strong>Cargo:</strong> ${escapeHtml(emp.role)}</p>
                                         <hr style="margin:8px 0; border:0; border-top:1px dashed var(--line);">
                                         <p><strong>CPF:</strong> ${escapeHtml(emp.cpf || '-')} | <strong>RG:</strong> ${escapeHtml(emp.rg || '-')}</p>
-                                        <p><strong>Celular:</strong> ${escapeHtml(emp.phone || '-')}</p>
-                                        <p><strong>E-mail:</strong> ${escapeHtml(emp.email || '-')}</p>
+                                        <p><strong>Celular:</strong> ${escapeHtml(emp.phone || '-')} | <strong>E-mail:</strong> ${escapeHtml(emp.email || '-')}</p>
                                         <p><strong>Endereço:</strong> ${escapeHtml(emp.address || '-')}</p>
                                     </div>
                                 </div>
@@ -379,6 +385,12 @@ function renderPublicView(container) {
 }
 
 function renderAdminView(container) {
+    const getCleanTeamClass = (team) => {
+        const clean = (team || '').toUpperCase().trim();
+        if (clean === 'ESCRITÓRIO' || clean === 'ESCRITORIO') return 'escritorio';
+        return clean.toLowerCase();
+    };
+
     container.innerHTML = `
         <div class="admin-grid-layout" style="grid-template-columns: 420px 1fr;">
             <div class="panel admin-panel-form">
@@ -457,7 +469,7 @@ function renderAdminView(container) {
                                         <div style="font-size:0.75rem; color:var(--muted);">SAP: ${escapeHtml(emp.sap || '-')}</div>
                                     </td>
                                     <td>${escapeHtml(emp.name)}</td>
-                                    <td><span class="table-team-badge ${(emp.team || '').toLowerCase()}">${escapeHtml(emp.team)}</span></td>
+                                    <td><span class="table-team-badge ${getCleanTeamClass(emp.team)}">${escapeHtml(emp.team)}</span></td>
                                     <td><small>${escapeHtml(emp.role)}</small></td>
                                     <td>
                                         <select class="status-select select-${emp.status.toLowerCase()}" data-id="${emp.id}">
@@ -634,6 +646,30 @@ async function handleUpdateEmployee(e) {
     } catch (err) {
         console.error("Erro ao salvar:", err.message);
         alert('Erro ao salvar no banco de dados: ' + err.message);
+    }
+}
+
+// CORREÇÃO DE PERSISTÊNCIA REATIVA SÊNIOR (Evita loops e travamento de DOM)
+async function handleStatusMutation(id, newStatus) {
+    // 1. Atualiza imediatamente a memória local para resposta visual instantânea
+    const target = state.employees.find(e => e.id === id);
+    if (target) target.status = newStatus;
+
+    try {
+        // 2. Dispara a persistência em segundo plano assíncrona
+        const { error } = await supabaseClient
+            .from('employees')
+            .update({ status: newStatus, updated_at: new Date().toISOString() })
+            .eq('id', id);
+            
+        if (error) throw error;
+        
+        // 3. Recarrega os dados em background de forma limpa
+        const { data } = await supabaseClient.from('employees').select('*').order('name', { ascending: true });
+        if (data) state.employees = data;
+    } catch (err) { 
+        console.error("Erro ao mutar status:", err.message);
+        showAlert('Erro ao salvar alteração no Supabase.', 'error'); 
     }
 }
 
