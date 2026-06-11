@@ -265,7 +265,6 @@ function renderPublicView(container) {
                     totaisNucleo.Total++;
                     
                     const statusNormalizado = (emp.status || '').toUpperCase().trim();
-                    // FIX SINTAXE: Chaves adicionadas para garantir a integridade dos blocos de controle
                     if (statusNormalizado === 'ATIVO') { 
                         statsCargo.Ativo++; totaisNucleo.Ativo++; 
                     } else if (statusNormalizado === 'FÉRIAS' || statusNormalizado === 'FERIAS') { 
@@ -547,6 +546,7 @@ async function handleCreateEmployee(e) {
     } catch (err) { showAlert('Erro de cadastro (RE ou CPF duplicado).', 'error'); }
 }
 
+// FIX: Função limpa e sem nenhum caractere orfão remanescente ao final
 function openEditModal(id) {
     const emp = state.employees.find(e => e.id === id);
     if (!emp) return;
@@ -646,7 +646,7 @@ async function handleUpdateEmployee(e) {
 
         if (error) throw error;
 
-        alert('Registro modificado e atualizado com sucesso absoluto!');
+        alert('Registro modificado e updated com sucesso absoluto!');
         closeEditModal();
         await fetchEmployeesData();
         render();
@@ -656,7 +656,6 @@ async function handleUpdateEmployee(e) {
     }
 }
 
-// REATIVIDADE BLINDADA EM SEGUNDO PLANO: Salva o status instantaneamente sem quebrar o loop do DOM
 async function handleStatusMutation(id, newStatus) {
     const target = state.employees.find(e => e.id === id);
     if (target) target.status = newStatus;
