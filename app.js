@@ -254,7 +254,7 @@ function renderPublicView(container) {
         const totaisNucleo = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0, Folga: 0 };
 
         cargos.forEach(cargo => {
-            const statsCargo = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
+            const statsCargo = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0, Folga: 0 };
 
             state.employees.forEach(emp => {
                 const empTeam = (emp.team || '').toUpperCase().trim();
@@ -279,6 +279,7 @@ function renderPublicView(container) {
                     } else if (statusNormalizado === 'EMPRESTADO') { 
                         statsCargo.Emprestado++; totaisNucleo.Emprestado++; 
                     } else if (statusNormalizado === 'FOLGA') {
+                        statsCargo.Folga++; totaisNucleo.Folga++;
                     }
                 }
             });
@@ -487,6 +488,7 @@ function renderAdminView(container) {
                                             <option value="Curso" ${emp.status === 'Curso' ? 'selected' : ''}>Curso</option>
                                             <option value="Inativo" ${emp.status === 'Inativo' ? 'selected' : ''}>Inativo</option>
                                             <option value="Emprestado" ${emp.status === 'Emprestado' ? 'selected' : ''}>Emprestado</option>
+                                            <option value="Folga" ${emp.status === 'Folga' ? 'selected' : ''}>Folga</option>
                                         </select>
                                     </td>
                                     <td>
