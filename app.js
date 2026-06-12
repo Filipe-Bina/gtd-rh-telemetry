@@ -225,7 +225,7 @@ async function handleLoginSubmit(e) {
 }
 
 function renderPublicView(container) {
-    const statusTypes = ['Ativo', 'Férias', 'Atestado', 'Curso', 'Inativo', 'Emprestado'];
+    const statusTypes = ['Ativo', 'Férias', 'Atestado', 'Curso', 'Inativo', 'Emprestado', 'Folga'];
     
     const nucleos = {
         DADOS: ['COORDENADOR', 'SUPERVISOR DE DADOS', 'APOIO DE SUPERVISOR', 'TÉCNICO DE DADOS II', 'TÉCNICO DE DADOS I'],
@@ -233,7 +233,7 @@ function renderPublicView(container) {
         ESCRITÓRIO: ['SUPERVISORA DE ESCRITÓRIO', 'ASSISTENTE', 'ATENDENTE']
     };
 
-    const totalGeral = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
+    const totalGeral = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0, Folga: 0 };
     
     state.employees.forEach(emp => {
         totalGeral.Total++;
@@ -244,13 +244,14 @@ function renderPublicView(container) {
         else if (statusNormalizado === 'CURSO') totalGeral.Curso++;
         else if (statusNormalizado === 'INATIVO') totalGeral.Inativo++;
         else if (statusNormalizado === 'EMPRESTADO') totalGeral.Emprestado++;
+        else if (statusNormalizado === 'FOLGA') totalGeral.Folga++;
     });
 
     let telemetryHtml = '';
 
     for (const [nucleo, cargos] of Object.entries(nucleos)) {
         let rowsHtml = '';
-        const totaisNucleo = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
+        const totaisNucleo = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0, Folga: 0 };
 
         cargos.forEach(cargo => {
             const statsCargo = { Total: 0, Ativo: 0, Férias: 0, Atestado: 0, Curso: 0, Inativo: 0, Emprestado: 0 };
@@ -277,6 +278,7 @@ function renderPublicView(container) {
                         statsCargo.Inativo++; totaisNucleo.Inativo++; 
                     } else if (statusNormalizado === 'EMPRESTADO') { 
                         statsCargo.Emprestado++; totaisNucleo.Emprestado++; 
+                    } else if (statusNormalizado === 'FOLGA') {
                     }
                 }
             });
@@ -332,7 +334,7 @@ function renderPublicView(container) {
     container.innerHTML = `
         <div class="section-head">
             <h2>Mesa de Telemetria Operacional</h2>
-            <p>Visão estatística distribuída e fatiada pelo organograma Ability</p>
+            <p>Visão estatística distribuída e fatiada pelo Organograma B2B</p>
         </div>
 
         <div class="panel" style="background:#0f172a; color:#fff; margin-bottom:32px; padding:24px; border-radius:12px;">
