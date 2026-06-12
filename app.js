@@ -54,7 +54,7 @@ function initAppStructure() {
         <header class="topbar">
             <div class="topbar-inner">
                 <div class="brand-logo" id="logo-click-fix" style="cursor:pointer;">
-                    <span class="mini-mark">GTD</span>
+                    <span class="mini-mark">B2B</span>
                     <span class="brand-title">Ability Operacional</span>
                 </div>
                 <div id="nav-actions"></div>
@@ -145,7 +145,7 @@ function renderLoginView(container) {
         <div class="auth-shell">
             <div class="auth-card">
                 <div class="auth-header">
-                    <div class="mini-mark" style="display:inline-block; margin-bottom:10px;">GTD SECURITY</div>
+                    <div class="mini-mark" style="display:inline-block; margin-bottom:10px;">B2B SECURITY</div>
                     <h1>Portal Ability</h1>
                     <p class="brand-sub">Insira seu RE cadastrado na Whitelist</p>
                 </div>
