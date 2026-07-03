@@ -2,6 +2,11 @@
 
 Gestão de Telemetria e Consulta de Funcionários - Sistema operacional corporativo.
 
+## 🎯 O que o sistema faz
+- Painel corporativo para acompanhamento de status de funcionários em tempo real
+- Dashboard administrativo com CRUD completo
+- Autenticação e sincronização de dados via Supabase (PostgreSQL)
+
 ## 🚀 Início Rápido
 
 ### 1. Clonar o Repositório
